@@ -347,7 +347,8 @@ const chartOpts = ref({
 // 日期范围
 const recentDaysRange = ref(7);
 
-const swiperList = ref(["/static/images/login-bg1.jpg"]);
+const swiperList = ref(["https://minio.aioveu.com/aioveu/login-bg1.jpg",
+  "https://minio.aioveu.com/aioveu/IMG_7193.JPG"]);
 
 // 快捷导航列表
 const navList = reactive([

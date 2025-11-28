@@ -8,7 +8,7 @@
         <image
           class="w-158px h-158px"
           :show-menu-by-longpress="true"
-          src="/static/images/aioveu-qrcode.jpg"
+          src="https://minio.aioveu.com/aioveu/aioveu-qrcode.jpg"
           mode="aspectFit"
         />
       </view>

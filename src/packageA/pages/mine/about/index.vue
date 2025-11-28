@@ -2,7 +2,7 @@
   <view class="about-container">
     <!-- 顶部 Logo 区域 -->
     <view class="logo-section">
-      <image class="logo" src="/static/icons/logo.png" mode="aspectFit" />
+      <image class="logo" src="https://minio.aioveu.com/aioveu/IMG_7193.JPG" mode="aspectFit" />
       <text class="app-name">可我不敌可爱</text>
       <text class="version">版本 {{ version }}</text>
     </view>
