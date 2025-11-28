@@ -156,7 +156,7 @@ import { onLoad, onReachBottom } from "@dcloudio/uni-app";
 
 import { LoadMoreState } from "wot-design-uni/components/wd-loadmore/types";
 import { FormRules } from "wot-design-uni/components/wd-form/types";
-import { useMessage } from "wot-design-uni";
+import { useMessage } from "wot-design-uni/components/wd-message-box/index";
 
 import UserAPI, { type UserPageQuery, UserPageVO, UserForm } from "@/api/system/user";
 import RoleAPI from "@/packageB/api/system/role";

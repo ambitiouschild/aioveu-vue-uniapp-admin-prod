@@ -93,7 +93,7 @@
 import { onLoad } from "@dcloudio/uni-app";
 import { type LoginFormData } from "@/api/auth";
 import { useUserStore } from "@/store/modules/user";
-import { useToast } from "wot-design-uni";
+import { useToast } from "wot-design-uni/components/wd-toast/index";
 import { ref } from "vue";
 
 const loginFormRef = ref();

@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts" setup>
-import { dayjs } from "wot-design-uni";
+import { dayjs } from "wot-design-uni/index";
 
 const props = defineProps({
   modelValue: {

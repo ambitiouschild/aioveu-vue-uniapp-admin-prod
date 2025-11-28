@@ -152,7 +152,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useToast } from "wot-design-uni";
+import { useToast } from "wot-design-uni/components/wd-toast/index";
 import { useUserStore } from "@/store/modules/user";
 import { useThemeStore } from "@/store/modules/theme";
 import { computed } from "vue";

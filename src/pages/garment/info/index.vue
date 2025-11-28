@@ -164,8 +164,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuQRCodeAPI from '@/api/system/aioveuQRCode'; // 请根据实际路径调整
-import { dayjs } from 'wot-design-uni';
+// import AioveuQRCodeAPI from '@/api/system/aioveuQRCode'; // 请根据实际路径调整
+import { dayjs } from 'wot-design-uni/index';
 
 // 衣物信息
 const garmentInfo = ref<any>({});

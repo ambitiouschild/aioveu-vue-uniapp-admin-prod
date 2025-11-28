@@ -100,7 +100,7 @@ import { LoadMoreState } from "wot-design-uni/components/wd-loadmore/types";
 import { DropMenuItemExpose } from "wot-design-uni/components/wd-drop-menu-item/types";
 import { FormInstance } from "wot-design-uni/components/wd-form/types";
 import { FormRules } from "wot-design-uni/components/wd-form/types";
-import { useMessage } from "wot-design-uni";
+import { useMessage } from "wot-design-uni/components/wd-message-box/index";
 const message = useMessage();
 
 const loadMoreState = ref<LoadMoreState>("loading");

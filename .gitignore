@@ -24,3 +24,10 @@ dist
 launch.json
 .hbuilderx
 pnpm-lock.yaml
+
+# 忽略 node_modules（不要提交到 git）
+node_modules/
+
+# 忽略构建产物（根据情况选择）
+dist/
+unpackage/

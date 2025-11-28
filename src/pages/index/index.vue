@@ -99,7 +99,8 @@
       </template>
 
       <view class="charts-box">
-        <qiun-data-charts type="area" :chartData="chartData" :opts="chartOpts" />
+<!--        <qiun-data-charts type="area" :chartData="chartData" :opts="chartOpts" />-->
+<!--        qiun-data-charts是一个专门为 UniApp 和微信小程序设计的轻量级图表库。-->
       </view>
     </wd-card>
   </view>
@@ -122,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { dayjs } from "wot-design-uni";
+import { dayjs } from "wot-design-uni/index";
 
 import LogAPI, { VisitStatsVO } from "@/api/system/log";
 import { ref } from 'vue';

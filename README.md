@@ -38,3 +38,22 @@ pnpm run build:h5
 
 
 这样配置完成后，就可以通过 nginx 服务器来访问你的项目了。
+
+
+❌ 误区1：vendor.js 是 node_modules 的压缩版
+正确理解：vendor.js 是经过 Tree Shaking、代码分割、压缩优化后的生产代码。
+
+❌ 误区2：删除 node_modules 会影响已构建的项目
+正确理解：已构建的项目（dist 目录）不依赖 node_modules。
+
+❌ 误区3：必须保留 node_modules 才能运行构建后的代码
+正确理解：构建后的代码是自包含的，所有依赖都已打包。
+
+为什么我的uniapp运行微信小程序生成的mp-weixin里面还有node-modules文件夹，而且很大，可以删掉吗
+
+无论哪种情况，mp-weixin目录下的node_modules都是可以删除的，因为小程序运行时不依赖这个目录，它依赖的是已经打包到js文件中的代码。
+原因：
+小程序运行时依赖的是打包后的 vendor.js，不是 node_modules
+mp-weixin中的 node_modules是冗余的
+删除后可以显著减小包体积
+不会影响小程序功能

@@ -58,7 +58,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { useToast } from "wot-design-uni";
+import { useToast } from "wot-design-uni/components/wd-toast/index";
 import { checkLogin } from "@/packageA/utils/auth";
 
 const toast = useToast();
