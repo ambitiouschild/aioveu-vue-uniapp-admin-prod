@@ -5,7 +5,6 @@
 
     <!-- Logo和标题区域 -->
     <view class="header">
-<!--      <image src="/static/icons/logo.png" class="logo" />-->
       <image src="https://minio.aioveu.com/aioveu/IMG_7193.JPG" class="logo" />
       <text class="title">可我不敌可爱</text>
       <text class="subtitle">恰同学少年，风华正茂；书生意气，挥斥方遒</text>
