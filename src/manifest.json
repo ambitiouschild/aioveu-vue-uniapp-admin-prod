@@ -53,10 +53,33 @@
         "appid" : "wx977b2949b7095b11",
         "setting" : {
             "urlCheck" : false,
-            "minified" : false
+            "minified" : true,
+            "es6" : true,
+            "postcss" : true
         },
         "usingComponents" : true,
-      "lazyCodeLoading": "requiredComponents"
+        "lazyCodeLoading" : "requiredComponents",
+        "permission" : {
+            "scope.userLocation": {
+              "desc": "获取您的地理位置，用于展示附近服务和位置相关功能"
+            },
+            "scope.userLocationBackground": {
+              "desc": "需要您的地理位置信息在后台运行，用于持续定位服务"
+            },
+            "scope.record": {
+              "desc": "需要您的麦克风权限，用于语音输入和录音功能"
+            },
+            "scope.camera": {
+              "desc": "需要您的摄像头权限，用于扫码和拍照功能"
+            },
+            "scope.writePhotosAlbum": {
+              "desc": "需要您的相册权限，用于保存图片到相册"
+            }
+        },
+      "optimization" : {
+        "subpackages" : true
+      }
+
     },
     "mp-alipay" : {
         "usingComponents" : true
