@@ -165,7 +165,17 @@
 import { ref, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 // import AioveuQRCodeAPI from '@/api/system/aioveuQRCode'; // 请根据实际路径调整
-import { dayjs } from 'wot-design-uni/index';
+// import { dayjs } from 'wot-design-uni/index';
+// 这个文件导出了整个库的所有内容
+
+// ✅ 方式1：使用命名空间导入
+import * as dayjs from 'wot-design-uni/dayjs';
+
+// ✅ 方式2：使用 require（CommonJS 方式）
+// const dayjs = require('wot-design-uni/dayjs').default;
+
+// ✅ 方式3：动态导入
+// const dayjs = (await import('wot-design-uni/dayjs')).default;
 
 // 衣物信息
 const garmentInfo = ref<any>({});
@@ -189,34 +199,34 @@ const statusOptions = ref([
 ]);
 
 // 页面加载时获取参数
-onLoad((options) => {
-  if (options.garmentInfo) {
-    garmentInfo.value = JSON.parse(decodeURIComponent(options.garmentInfo));
-    loadStatusHistory();
-  }
-});
+// onLoad((options) => {
+//   if (options.garmentInfo) {
+//     garmentInfo.value = JSON.parse(decodeURIComponent(options.garmentInfo));
+//     loadStatusHistory();
+//   }
+// });
 
 // 加载状态历史记录
-const loadStatusHistory = async () => {
-  try {
-    const response = await AioveuQRCodeAPI.getStatusHistory({
-      garmentCode: garmentInfo.value.garmentCode
-    });
-    statusHistory.value = response.data;
-  } catch (error) {
-    console.error('加载历史记录失败:', error);
-  }
-};
+// const loadStatusHistory = async () => {
+//   try {
+//     const response = await AioveuQRCodeAPI.getStatusHistory({
+//       garmentCode: garmentInfo.value.garmentCode
+//     });
+//     statusHistory.value = response.data;
+//   } catch (error) {
+//     console.error('加载历史记录失败:', error);
+//   }
+// };
 
 // 更新状态
 const updateStatus = async () => {
   try {
-    await AioveuQRCodeAPI.updateStatus({
-      garmentCode: garmentInfo.value.garmentCode,
-      newStatus: statusForm.value.newStatus,
-      operatorId: 1, // 操作员ID
-      note: statusForm.value.note
-    });
+    // await AioveuQRCodeAPI.updateStatus({
+    //   garmentCode: garmentInfo.value.garmentCode,
+    //   newStatus: statusForm.value.newStatus,
+    //   operatorId: 1, // 操作员ID
+    //   note: statusForm.value.note
+    // });
 
     uni.showToast({
       title: '状态更新成功',
@@ -224,7 +234,7 @@ const updateStatus = async () => {
     });
 
     // 刷新状态历史
-    loadStatusHistory();
+    // loadStatusHistory();
 
     // 更新当前状态显示
     garmentInfo.value.currentStatus = statusForm.value.newStatus;

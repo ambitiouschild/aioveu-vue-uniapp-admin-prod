@@ -64,7 +64,8 @@
 </template>
 <script setup lang="ts">
 import UserAPI, { type UserProfileVO, UserProfileForm } from "@/api/system/user";
-import FileAPI, { type FileInfo } from "@/api/file";
+//这个错误是因为路径解析问题。你在移动文件后，导入路径没有正确更新。让我帮你解决这个问题。
+import FileAPI, { type FileInfo } from "@/packageA/api/file";
 import { checkLogin } from "@/packageA/utils/auth";
 
 const originalSrc = ref<string>(""); //选取的原图路径

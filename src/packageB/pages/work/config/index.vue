@@ -1,267 +1,360 @@
 <template>
   <view class="work">
-    <!-- 筛选 -->
-    <wd-drop-menu close-on-click-modal class="mb-20rpx mr-20rpx ml-20rpx">
-      <wd-drop-menu-item ref="dropMenu" title="筛选" icon="filter" icon-size="18px">
-        <view>
-          <wd-input
-            v-model="queryParams.keywords"
-            label="关键字"
-            type="text"
-            clearable
-            placeholder="请输入关键字"
-          />
-          <view class="flex flex-row items-center mb-20rpx">
-            <wd-button class="mt-20rpx mb-20rpx" size="medium" @click="handleQuery()">
-              查询
-            </wd-button>
-            <wd-button size="medium" type="info" @click="handleReset">重置</wd-button>
+    <!-- 状态栏占位 -->
+    <view style="width: 100%; height: var(--status-bar-height)" />
+
+    <!-- 自定义导航栏 -->
+    <uni-nav-bar title="系统配置" left-icon="left" @clickLeft="handleNavigateback" fixed />
+
+    <!-- 筛选区域 -->
+    <view class="filter-container">
+      <view class="filter-bar">
+        <view class="filter-item" @click="showFilterPopup = true">
+          <text>筛选</text>
+          <uni-icons type="filter" size="14" color="#666"></uni-icons>
+        </view>
+      </view>
+
+      <!-- 筛选弹出层 -->
+      <uni-popup ref="filterPopup" type="bottom" background-color="#fff">
+        <view class="popup-content">
+          <view class="popup-header">
+            <text class="popup-title">筛选条件</text>
+            <uni-icons type="close" size="20" @click="showFilterPopup = false"></uni-icons>
+          </view>
+
+          <view class="filter-form">
+            <view class="form-item">
+              <text class="form-label">关键字</text>
+              <uni-easyinput
+                  v-model="queryParams.keywords"
+                  placeholder="请输入关键字"
+                  trim
+              />
+            </view>
+
+            <view class="form-buttons">
+              <button class="btn-reset" @click="handleReset">重置</button>
+              <button class="btn-query" @click="handleQuery">查询</button>
+            </view>
           </view>
         </view>
-      </wd-drop-menu-item>
-    </wd-drop-menu>
+      </uni-popup>
+    </view>
 
+    <!-- 数据列表 -->
     <view class="data-container">
-      <!-- 列表内容 -->
-      <view v-for="(item, index) in pageData" :key="index" class="mb-20rpx">
-        <wd-card>
-          <template #title>
-            <view class="flex items-center justify-between">
-              <view class="flex-1 text-truncate">{{ item.configName }}</view>
-            </view>
-          </template>
+      <uni-card
+          v-for="(item, index) in pageData"
+          :key="index"
+          class="config-card"
+          :is-shadow="true"
+          :margin="20"
+      >
+        <view class="card-header">
+          <view class="title-section">
+            <text class="config-title">{{ item.configName }}</text>
+          </view>
+        </view>
 
-          <wd-cell-group>
-            <wd-cell title="配置键" :value="item.configKey" />
-            <wd-cell title="配置值" :value="item.configValue" />
-            <wd-cell title="备注" :value="item.remark" />
-          </wd-cell-group>
+        <view class="card-content">
+          <view class="info-item">
+            <uni-icons type="key" size="16" color="#666"></uni-icons>
+            <text class="info-label">配置键：</text>
+            <text class="info-value">{{ item.configKey }}</text>
+          </view>
 
-          <template #footer>
-            <wd-button size="small" plain type="primary" @click="handleAction(item)">
-              操作
-            </wd-button>
-          </template>
-        </wd-card>
-      </view>
+          <view class="info-item">
+            <uni-icons type="value" size="16" color="#666"></uni-icons>
+            <text class="info-label">配置值：</text>
+            <text class="info-value config-value">{{ item.configValue }}</text>
+          </view>
+
+          <view class="info-item">
+            <uni-icons type="info" size="16" color="#666"></uni-icons>
+            <text class="info-label">备注：</text>
+            <text class="info-value">{{ item.remark || '-' }}</text>
+          </view>
+        </view>
+
+        <view class="card-footer">
+          <button class="btn-action" @click="handleAction(item)">操作</button>
+        </view>
+      </uni-card>
+
+      <!-- 加载更多 -->
+      <uni-load-more
+          v-if="pageData.length > 0"
+          :status="loadMoreStatus"
+          @clickLoadMore="loadmore"
+      />
+
+      <!-- 空状态 -->
+      <view v-else-if="!loading" text="暂无配置数据" />
     </view>
 
-    <!-- 加载更多 -->
-    <wd-loadmore :state="state" @reload="handleQuery" />
-
-    <!-- 底部按钮 -->
-    <view class="fixed bottom-0 w-full flex justify-around items-center p-20rpx bg-#fff">
-      <wd-button size="medium" type="primary" @click="handleOpenDialog">添加</wd-button>
-      <wd-button size="medium" type="success" @click="refreshCache">刷新缓存</wd-button>
+    <!-- 底部操作按钮 -->
+    <view class="bottom-actions">
+      <button class="btn-add" @click="handleOpenDialog">添加配置</button>
+      <button class="btn-refresh" @click="refreshCache">刷新缓存</button>
     </view>
 
-    <wd-popup v-model="showEditPopup" position="bottom">
-      <view class="p-20rpx">
-        <wd-form ref="formRef" :model="form">
-          <wd-input
-            v-model="form.configName"
-            label="配置名称"
-            type="text"
-            placeholder="请输入配置名称"
-            :rules="[{ required: true, message: '请填写配置名称' }]"
-          />
-          <wd-input
-            v-model="form.configKey"
-            label="配置键名"
-            type="text"
-            placeholder="请输入配置键名"
-            :rules="[{ required: true, message: '请填写配置键' }]"
-          />
-          <wd-input
-            v-model="form.configValue"
-            label="配置键值"
-            type="text"
-            placeholder="请输入配置键值"
-            :rules="[{ required: true, message: '请填写配置值' }]"
-          />
-          <wd-textarea
-            v-model="form.remark"
-            prop="remark"
-            label="配置描述"
-            label-align="right"
-            clearable
-            :maxlength="100"
-            show-word-limit
-            label-width="100px"
-            placeholder="请输入配置描述"
-          />
-        </wd-form>
-        <view class="flex justify-around mt-20rpx">
-          <wd-button @click="showEditPopup = false">取消</wd-button>
-          <wd-button type="primary" native-type="submit" :loading="loading" @click="submitForm">
-            确定
-          </wd-button>
+    <!-- 编辑弹窗 -->
+    <uni-popup ref="formPopup" type="bottom" background-color="#fff">
+      <view class="form-popup">
+        <view class="popup-header">
+          <text class="popup-title">{{ form.id ? '编辑配置' : '添加配置' }}</text>
+          <uni-icons type="close" size="20" @click="showEditPopup = false"></uni-icons>
+        </view>
+
+        <scroll-view class="form-content" scroll-y>
+          <uni-forms ref="formRef" :model="form" :rules="rules">
+            <uni-forms-item label="配置名称" required name="configName">
+              <uni-easyinput
+                  v-model="form.configName"
+                  placeholder="请输入配置名称"
+              />
+            </uni-forms-item>
+
+            <uni-forms-item label="配置键名" required name="configKey">
+              <uni-easyinput
+                  v-model="form.configKey"
+                  placeholder="请输入配置键名"
+              />
+            </uni-forms-item>
+
+            <uni-forms-item label="配置键值" required name="configValue">
+              <uni-easyinput
+                  v-model="form.configValue"
+                  placeholder="请输入配置键值"
+              />
+            </uni-forms-item>
+
+            <uni-forms-item label="配置描述" name="remark">
+              <textarea
+                  v-model="form.remark"
+                  placeholder="请输入配置描述"
+                  class="form-textarea"
+                  maxlength="100"
+              />
+              <view class="word-count">{{ form.remark ? form.remark.length : 0 }}/100</view>
+            </uni-forms-item>
+          </uni-forms>
+        </scroll-view>
+
+        <view class="form-footer">
+          <button class="btn-cancel" @click="showEditPopup = false">取消</button>
+          <button class="btn-submit" :loading="loading" @click="submitForm">确定</button>
         </view>
       </view>
-    </wd-popup>
+    </uni-popup>
   </view>
 </template>
 
 <script lang="ts" setup>
+import { onLoad, onReachBottom } from "@dcloudio/uni-app";
+import { ref, reactive } from 'vue';
+
 import ConfigAPI, { ConfigPageVO, ConfigForm, ConfigPageQuery } from "@/packageB/api/system/config";
-import { DropMenuItemExpose } from "wot-design-uni/components/wd-drop-menu-item/types";
-import { LoadMoreState } from "wot-design-uni/components/wd-loadmore/types";
-import { FormInstance } from "wot-design-uni/components/wd-form/types";
-import { debounce } from "@/packageB/utils";
-const state = ref<LoadMoreState>("loading"); // 加载状态 loading, finished:, error
+
+// 状态管理
+const loading = ref(false);
+const showFilterPopup = ref(false);
+const showEditPopup = ref(false);
+const loadMoreStatus = ref<'more' | 'loading' | 'noMore'>('more');
+
+// 数据列表
+const pageData = ref<ConfigPageVO[]>([]);
 const total = ref(0);
+
+// 查询参数
 const queryParams = reactive<ConfigPageQuery>({
   pageNum: 1,
   pageSize: 10,
   keywords: "",
 });
-// 系统配置表格数据
-const pageData = ref<ConfigPageVO[]>([]);
-const formRef = ref<FormInstance>();
 
-const loading = ref(false);
+// 表单数据
+const form = reactive<ConfigForm>({
+  id: undefined,
+  configName: "",
+  configKey: "",
+  configValue: "",
+  remark: ""
+});
+
+// 表单引用
+const formRef = ref();
+const formPopup = ref();
+
+// 表单验证规则
+const rules = {
+  configName: {
+    rules: [{ required: true, errorMessage: '请输入配置名称' }]
+  },
+  configKey: {
+    rules: [{ required: true, errorMessage: '请输入配置键名' }]
+  },
+  configValue: {
+    rules: [{ required: true, errorMessage: '请输入配置键值' }]
+  }
+};
 
 /**
- * 搜索栏
- */
-const dropMenu = ref<DropMenuItemExpose>();
-
-/**
- * 搜索
+ * 查询
  */
 function handleQuery() {
-  pageData.value = [];
-  dropMenu.value?.close();
+  showFilterPopup.value = false;
   queryParams.pageNum = 1;
+  pageData.value = [];
   loadmore();
 }
 
-const showEditPopup = ref(false);
-const form = ref<ConfigForm>({});
+/**
+ * 重置查询
+ */
+function handleReset() {
+  queryParams.pageNum = 1;
+  queryParams.keywords = "";
+  pageData.value = [];
+  showFilterPopup.value = false;
+  handleQuery();
+}
 
-// 修改编辑函数
+/**
+ * 加载更多
+ */
+function loadmore() {
+  if (loading.value || loadMoreStatus.value === 'noMore') return;
+
+  loading.value = true;
+  loadMoreStatus.value = 'loading';
+
+  ConfigAPI.getPage(queryParams)
+      .then((data) => {
+        if (queryParams.pageNum === 1) {
+          pageData.value = data.list || [];
+        } else {
+          pageData.value = [...pageData.value, ...(data.list || [])];
+        }
+        total.value = data.total || 0;
+        queryParams.pageNum++;
+
+        // 更新加载状态
+        loadMoreStatus.value = pageData.value.length >= total.value ? 'noMore' : 'more';
+      })
+      .catch((error) => {
+        console.error('加载数据失败:', error);
+        uni.showToast({ title: "加载失败", icon: "none" });
+      })
+      .finally(() => {
+        loading.value = false;
+      });
+}
+
+/**
+ * 打开添加对话框
+ */
+function handleOpenDialog() {
+  // 重置表单
+  Object.assign(form, {
+    id: undefined,
+    configName: "",
+    configKey: "",
+    configValue: "",
+    remark: ""
+  });
+  showEditPopup.value = true;
+  formPopup.value.open();
+}
+
+/**
+ * 编辑配置
+ */
 function handleEdit(id: number) {
   ConfigAPI.getFormData(id).then((data) => {
-    Object.assign(form.value, data);
-    // 显示弹窗
+    Object.assign(form, data);
     showEditPopup.value = true;
+    formPopup.value.open();
+  }).catch(error => {
+    console.error('获取配置数据失败:', error);
+    uni.showToast({ title: "获取数据失败", icon: "none" });
   });
 }
 
-// 提交表单
+/**
+ * 提交表单
+ */
 async function submitForm() {
-  loading.value = true;
+  if (loading.value) return;
+
   try {
-    if (formRef.value) {
-      formRef.value!.validate().then(async ({ valid }) => {
-        if (valid) {
-          if (form.value.id) {
-            await ConfigAPI.update(form.value.id, form.value);
-            uni.showToast({ title: "更新成功", icon: "success" });
-          } else {
-            await ConfigAPI.add(form.value);
-            uni.showToast({ title: "添加成功", icon: "success" });
-          }
-          showEditPopup.value = false;
-          handleQuery(); // 刷新列表
-        } else {
-          uni.showToast({ title: "请检查表单", icon: "error" });
-          loading.value = false;
-        }
+    const valid = await formRef.value.validate();
+    if (valid) {
+      loading.value = true;
+
+      const apiCall = form.id ? ConfigAPI.update(form.id, form) : ConfigAPI.add(form);
+
+      await apiCall;
+      uni.showToast({
+        title: form.id ? "更新成功" : "添加成功",
+        icon: "success"
       });
+
+      showEditPopup.value = false;
+      formPopup.value.close();
+      handleQuery(); // 刷新列表
     }
-  } catch {
-    uni.showToast({ title: "操作失败", icon: "error" });
-    loading.value = false;
+  } catch (error) {
+    console.error('表单验证失败:', error);
   } finally {
     loading.value = false;
   }
 }
 
 /**
- * 重置搜索条件
- */
-function handleReset() {
-  queryParams.pageNum = 1;
-  queryParams.keywords = "";
-  pageData.value = [];
-  dropMenu.value?.close();
-  handleQuery();
-}
-
-/**
- * 触底事件
- */
-onReachBottom(() => {
-  queryParams.pageNum++;
-  handleQuery();
-});
-
-/**
- * 加载更多
- */
-function loadmore() {
-  state.value = "loading";
-  ConfigAPI.getPage(queryParams)
-    .then((data) => {
-      if (queryParams.pageNum === 1) {
-        pageData.value = data.list;
-      } else {
-        pageData.value.push(...data.list);
-      }
-      total.value = data.total;
-    })
-    .finally(() => {
-      state.value = "finished";
-    });
-}
-
-/**
- * 添加
- */
-function handleOpenDialog() {
-  form.value.id = undefined;
-  form.value.configName = "";
-  form.value.configKey = "";
-  form.value.configValue = "";
-  form.value.remark = "";
-  showEditPopup.value = true;
-}
-
-/**
  * 刷新缓存
  */
-const refreshCache = debounce(() => {
+const refreshCache = () => {
+  uni.showLoading({ title: '刷新中...' });
   ConfigAPI.refreshCache().then(() => {
+    uni.hideLoading();
     uni.showToast({
       title: "刷新缓存成功",
       icon: "success",
-      duration: 1000, // 显示时间，单位为毫秒，设置为 0 则不会自动消失
+      duration: 1000
     });
+  }).catch(error => {
+    uni.hideLoading();
+    console.error('刷新缓存失败:', error);
+    uni.showToast({ title: "刷新缓存失败", icon: "none" });
   });
-}, 1000);
+};
 
 /**
- * 删除
+ * 删除配置
  */
 function handleDelete(item: ConfigPageVO) {
   uni.showModal({
     title: "提示",
     content: "确定要删除该配置吗？",
     success: async (res) => {
-      if (res.confirm) {
-        if (item.id) {
-          ConfigAPI.deleteById(item.id).then(() => {
-            uni.showToast({ title: "删除成功", icon: "success" });
-          });
+      if (res.confirm && item.id) {
+        try {
+          await ConfigAPI.deleteById(item.id);
+          uni.showToast({ title: "删除成功", icon: "success" });
+          handleQuery(); // 刷新列表
+        } catch (error) {
+          console.error('删除失败:', error);
+          uni.showToast({ title: "删除失败", icon: "none" });
         }
       }
-    },
+    }
   });
 }
 
 /**
- * 操作
+ * 操作按钮
  */
 function handleAction(item: ConfigPageVO) {
   const actions = ["编辑", "删除"];
@@ -270,55 +363,313 @@ function handleAction(item: ConfigPageVO) {
     success: ({ tapIndex }) => {
       switch (actions[tapIndex]) {
         case "编辑":
-          handleEdit(item.id || 0);
+          if (item.id) handleEdit(item.id);
           break;
         case "删除":
           handleDelete(item);
           break;
       }
-    },
+    }
   });
 }
 
-onMounted(() => {
-  handleQuery();
+/**
+ * 返回
+ */
+function handleNavigateback() {
+  uni.navigateBack();
+}
+
+// 触底事件
+onReachBottom(() => {
+  if (loadMoreStatus.value === 'more' && !loading.value) {
+    loadmore();
+  }
 });
 
-/**
- * 页面返回回来也要重新加载数据
- */
 onLoad(() => {
-  queryParams.pageNum = 1;
   handleQuery();
 });
 </script>
+
 <style lang="scss" scoped>
+.work {
+  background-color: #f8f8f8;
+  min-height: 100vh;
+  padding-bottom: 120rpx; /* 为底部按钮留出空间 */
+}
+
+// 筛选区域
+.filter-container {
+  background: #fff;
+  padding: 20rpx;
+  margin-top: calc(var(--status-bar-height) + 90rpx);
+  border-bottom: 1rpx solid #eee;
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+// 弹出层样式
+.popup-content {
+  padding: 40rpx;
+  max-height: 70vh;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.filter-form {
+  .form-item {
+    margin-bottom: 40rpx;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 16rpx;
+    font-size: 28rpx;
+    color: #333;
+  }
+}
+
+.form-buttons {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+
+  button {
+    flex: 1;
+    padding: 20rpx;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    border: none;
+  }
+
+  .btn-reset {
+    background: #f5f5f5;
+    color: #666;
+  }
+
+  .btn-query {
+    background: #007AFF;
+    color: white;
+  }
+}
+
+// 数据列表容器
 .data-container {
-  :deep(.wd-cell__wrapper) {
-    padding: 4rpx 0;
+  padding: 20rpx;
+  min-height: calc(100vh - 200rpx);
+}
+
+.config-card {
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.card-header {
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.config-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.4;
+}
+
+.card-content {
+  padding: 20rpx 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: #666;
+  min-width: 140rpx;
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+.config-value {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 4rpx 8rpx;
+  border-radius: 4rpx;
+  font-size: 24rpx;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f5f5f5;
+}
+
+.btn-action {
+  padding: 12rpx 24rpx;
+  background: #007AFF;
+  color: white;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  border: none;
+}
+
+// 底部操作按钮
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 20rpx;
+  display: flex;
+  gap: 20rpx;
+  border-top: 1rpx solid #eee;
+  z-index: 100;
+
+  button {
+    flex: 1;
+    padding: 24rpx;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    border: none;
   }
 
-  :deep(.wd-cell) {
-    padding-right: 10rpx;
-    background: #f8f8f8;
+  .btn-add {
+    background: #007AFF;
+    color: white;
   }
 
-  :deep(.wd-fab__trigger) {
-    width: 80rpx !important;
-    height: 80rpx !important;
+  .btn-refresh {
+    background: #18A058;
+    color: white;
+  }
+}
+
+// 表单弹窗
+.form-popup {
+  background: #fff;
+  width: 100%;
+  max-height: 80vh;
+  border-radius: 20rpx 20rpx 0 0;
+}
+
+.form-content {
+  max-height: 60vh;
+  padding: 0 40rpx;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120rpx;
+  padding: 20rpx;
+  border: 1rpx solid #e5e5e5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  background: #f8f8f8;
+}
+
+.word-count {
+  text-align: right;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.form-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 30rpx 40rpx;
+  border-top: 1rpx solid #eee;
+
+  button {
+    flex: 1;
+    padding: 24rpx;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    border: none;
   }
 
-  :deep(.wd-cell__right) {
-    flex: 2;
+  .btn-cancel {
+    background: #f5f5f5;
+    color: #666;
   }
 
+  .btn-submit {
+    background: #007AFF;
+    color: white;
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
   .filter-container {
-    padding: 10rpx;
-    background: #fff;
+    margin-top: calc(var(--status-bar-height) + 80rpx);
+    padding: 16rpx;
   }
 
   .data-container {
-    margin-top: 20rpx;
+    padding: 16rpx;
+  }
+
+  .bottom-actions {
+    flex-direction: column;
+    gap: 16rpx;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    gap: 16rpx;
   }
 }
 </style>

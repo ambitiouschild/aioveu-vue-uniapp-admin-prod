@@ -9,7 +9,8 @@
 </template>
 
 <script lang="ts" setup>
-import { dayjs } from "wot-design-uni/index";
+// ✅ 方式1：使用命名空间导入
+import * as dayjs from 'wot-design-uni/dayjs';
 
 const props = defineProps({
   modelValue: {

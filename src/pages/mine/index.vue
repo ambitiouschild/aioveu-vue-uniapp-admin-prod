@@ -18,22 +18,25 @@
           </block>
           <block v-else>
             <view class="login-prompt">立即登录获取更多功能</view>
-            <wd-button
-              custom-class="btn-login"
+            <button
+              class="btn-login"
               size="small"
               type="primary"
               @click="navigateToLoginPage"
             >
               登录/注册
-            </wd-button>
+            </button>
           </block>
         </view>
         <view class="actions">
           <view class="action-btn" @click="navigateToSettings">
-            <wd-icon name="setting1" size="22" color="#333" />
+<!--            设置图标  -->
+<!--            Uni-UI 图标 gear或 settings-->
+            <uni-icons type="gear" size="22" color="#333" />
           </view>
           <view v-if="isLogin" class="action-btn" @click="navigateToSection('messages')">
-            <wd-icon name="notification" size="22" color="#333" />
+<!--            这已经是正确的 Uni-UI 图标组件，用于显示"通知"图标。-->
+            <uni-icons type="notification" size="22" color="#333" />
             <view v-if="true" class="badge">2</view>
           </view>
         </view>
@@ -43,17 +46,17 @@
     <!-- 数据统计 -->
     <view class="stats-container">
       <view class="stat-item" @click="navigateToSection('wallet')">
-        <view class="stat-value">0.00</view>
+        <view class="stat-value">9999.00</view>
         <view class="stat-label">我的余额</view>
       </view>
       <view class="divider"></view>
       <view class="stat-item" @click="navigateToSection('favorites')">
-        <view class="stat-value">0</view>
+        <view class="stat-value">99</view>
         <view class="stat-label">我的收藏</view>
       </view>
       <view class="divider"></view>
       <view class="stat-item" @click="navigateToSection('history')">
-        <view class="stat-value">0</view>
+        <view class="stat-value">99</view>
         <view class="stat-label">浏览历史</view>
       </view>
     </view>
@@ -62,33 +65,49 @@
     <view class="card-container">
       <view class="card-header">
         <view class="card-title">
-          <wd-icon name="tools" size="18" :color="themeStore.primaryColor" />
+          <!-- 工具图标 -->
+          <uni-icons type="gear" size="18" :color="themeStore.primaryColor" />
           <text>常用工具</text>
         </view>
       </view>
       <view class="tools-grid">
         <view class="tool-item" @click="navigateToProfile">
           <view class="tool-icon">
-            <wd-icon name="user" size="24" :color="themeStore.primaryColor" />
+            <!-- 用户图标 -->
+            <uni-icons type="person" size="24" :color="themeStore.primaryColor" />
           </view>
           <view class="tool-label">个人资料</view>
         </view>
 
         <view class="tool-item" @click="navigateToFAQ">
           <view class="tool-icon">
-            <wd-icon name="help-circle" size="24" :color="themeStore.primaryColor" />
+            <!-- 帮助图标 -->
+            <uni-icons type="help" size="24" :color="themeStore.primaryColor" />
           </view>
           <view class="tool-label">常见问题</view>
         </view>
+
         <view class="tool-item" @click="handleQuestionFeedback">
           <view class="tool-icon">
-            <wd-icon name="check-circle" size="24" :color="themeStore.primaryColor" />
+            <!-- 成功/勾选图标 -->
+            <uni-icons type="checkbox" size="24" :color="themeStore.primaryColor" />
+
+<!--            我推荐使用 SVG 图标方案，因为：-->
+<!--            可靠性最高：不依赖外部组件库-->
+<!--            完全可控：可以精确控制样式和颜色-->
+<!--            性能优秀：内联 SVG 渲染性能好-->
+<!--            兼容性好：在所有平台都能正常显示-->
+
+
           </view>
+
           <view class="tool-label">问题反馈</view>
         </view>
+
         <view class="tool-item" @click="navigateToAbout">
           <view class="tool-icon">
-            <wd-icon name="info-circle" size="24" :color="themeStore.primaryColor" />
+            <!-- 信息图标 -->
+            <uni-icons type="info" size="24" :color="themeStore.primaryColor" />
           </view>
           <view class="tool-label">关于我们</view>
         </view>
@@ -99,7 +118,8 @@
     <view class="card-container">
       <view class="card-header">
         <view class="card-title">
-          <wd-icon name="star" size="18" :color="themeStore.primaryColor" />
+          <!-- 星星图标 -->
+          <uni-icons type="star" size="18" :color="themeStore.primaryColor" />
           <text>推荐服务</text>
         </view>
       </view>
@@ -107,44 +127,53 @@
         <view class="service-item" @click="navigateToSection('services', 'vip')">
           <view class="service-left">
             <view class="service-icon">
-              <wd-icon name="dong" size="22" :color="themeStore.primaryColor" />
+              <!-- 声音/动效图标（使用声音图标替代） -->
+              <uni-icons type="sound" size="22" :color="themeStore.primaryColor" />
             </view>
             <view class="service-info">
               <view class="service-name">会员中心</view>
               <view class="service-desc">解锁更多特权</view>
             </view>
           </view>
-          <wd-icon name="arrow-right" size="14" color="#999" />
+          <!-- 右箭头图标 -->
+          <uni-icons type="right" size="14" color="#999" />
         </view>
         <view class="service-item" @click="navigateToSection('services', 'coupon')">
           <view class="service-left">
             <view class="service-icon">
-              <wd-icon name="discount" size="22" :color="themeStore.primaryColor" />
+              <!-- 折扣图标（使用优惠券图标替代） -->
+              <uni-icons type="shop" size="22" :color="themeStore.primaryColor" />
             </view>
             <view class="service-info">
               <view class="service-name">优惠券</view>
               <view class="service-desc">查看我的优惠券</view>
             </view>
           </view>
-          <wd-icon name="arrow-right" size="14" color="#999" />
+          <!-- 右箭头图标 -->
+          <uni-icons type="right" size="14" color="#999" />
         </view>
         <view class="service-item" @click="navigateToSection('services', 'invite')">
           <view class="service-left">
             <view class="service-icon">
-              <wd-icon name="share" size="22" :color="themeStore.primaryColor" />
+              <!-- 分享图标 -->
+              <uni-icons type="more" size="22" :color="themeStore.primaryColor" />
             </view>
             <view class="service-info">
               <view class="service-name">邀请有礼</view>
               <view class="service-desc">邀请好友得奖励</view>
             </view>
           </view>
-          <wd-icon name="arrow-right" size="14" color="#999" />
+          <!-- 右箭头图标 -->
+          <uni-icons type="right" size="14" color="#999" />
         </view>
       </view>
     </view>
 
     <view v-if="isLogin" class="logout-btn-container">
-      <wd-button custom-class="logout-btn-unocss" @click="handleLogout">退出登录</wd-button>
+<!--      custom-class是 Wot Design Uni 组件库中许多组件提供的一个属性，用于给组件根元素添加自定义的类名。这样，开发者可以通过这个类名来自定义组件的样式。-->
+<!--      custom-class是 Wot Design Uni 组件库的特有属性，用于添加自定义类名。在替换为其他组件库或原生组件时，我们使用 class属性来替代。-->
+<!--      使用原生 button 元素（推荐）-->
+      <button class="logout-btn-unocss" @click="handleLogout">退出登录</button>
     </view>
 
     <wd-toast />
