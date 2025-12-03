@@ -176,17 +176,17 @@
       <button class="logout-btn-unocss" @click="handleLogout">退出登录</button>
     </view>
 
-    <wd-toast />
+    <!-- 删除这行 -->
+<!--    <wd-toast />-->
+    <!-- 不需要在模板中添加任何东西，直接使用 API 调用 -->
   </view>
 </template>
 
 <script lang="ts" setup>
-import { useToast } from "wot-design-uni/components/wd-toast/index";
 import { useUserStore } from "@/store/modules/user";
 import { useThemeStore } from "@/store/modules/theme";
 import { computed } from "vue";
 
-const toast = useToast();
 const userStore = useUserStore();
 const themeStore = useThemeStore();
 const userInfo = computed(() => userStore.userInfo);
@@ -212,7 +212,13 @@ const handleLogout = () => {
     success: function (res) {
       if (res.confirm) {
         userStore.logout();
-        toast.show("已退出登录");
+
+        // 显示 Toast
+        uni.showToast({
+          title: '已退出登录',
+          icon: 'success',
+          duration: 2000
+        })
       }
     },
   });
@@ -270,7 +276,24 @@ const navigateToSection = (section: string, subSection?: string) => {
     message += ` - ${subSection}`;
   }
 
-  toast.show(`${message}功能开发中...`);
+  // // 错误提示（使用 modal 模拟错误提示）
+  // uni.showModal({
+  //   title: '提示',
+  //   content: '功能开发中...',
+  //   showCancel: false,
+  //   confirmText: '知道了'
+  // })
+
+  // 根据 section和 subSection动态显示对应的提示信息
+  // 替换所有 wd-toast 调用为：
+  uni.showToast({
+    // 字符串模板语法：使用反引号（`）而不是单引号（'）
+    title: `${message}功能开发中...`,
+    // title: message + '功能开发中...',
+    icon: 'none', // 或 'success', 'error' 等
+    duration: 2000
+  })
+
 };
 </script>
 
