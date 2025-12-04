@@ -1,7 +1,54 @@
 <template>
   <view class="login-container">
+
+    <!-- 隐私协议弹窗 -->
+    <view v-if="showPrivacyAgreement" class="privacy-mask">
+      <view class="privacy-content">
+        <view class="privacy-header">
+          <text class="title">用户协议与隐私政策</text>
+        </view>
+
+        <view class="privacy-body">
+          <text class="desc">感谢您使用可我不敌可爱！我们高度重视您的个人信息和隐私保护。在您使用我们的服务前，请仔细阅读并同意以下协议：</text>
+
+          <view class="agreement-links">
+            <text class="link" @click="previewAgreement('user')">《用户服务协议》</text>
+            <text>和</text>
+            <text class="link" @click="previewAgreement('privacy')">《隐私政策》</text>
+          </view>
+
+          <view class="agreement-checkbox" @click="toggleAgree">
+            <!-- 圆形选择按钮 -->
+            <view class="circle-checkbox" :class="{ checked: hasAgreed }">
+              <view v-if="hasAgreed" class="circle-checkbox-inner"></view>
+            </view>
+            <text class="checkbox-label">我已阅读并同意以上协议</text>
+          </view>
+        </view>
+
+        <view class="privacy-footer">
+          <button class="btn disagree" @click="handleDisagree">暂不同意</button>
+          <button
+            class="btn agree"
+            :class="{ disabled: !hasAgreed }"
+            :disabled="!hasAgreed"
+            @click="handleAgree"
+          >
+            同意并继续
+          </button>
+        </view>
+      </view>
+    </view>
+
+
+
+
+
+
     <!-- 背景图 -->
-    <image src="/static/images/login-bg.svg" mode="aspectFill" class="login-bg" />
+<!--    <image src="/static/images/login-bg.svg" mode="aspectFill" class="login-bg" />-->
+    <!-- 原有登录页面内容 -->
+    <image v-if="!showPrivacyAgreement" src="/static/images/login-bg.svg" mode="aspectFill" class="login-bg" />
 
     <!-- Logo和标题区域 -->
     <view class="header">
@@ -13,14 +60,15 @@
     <!-- 登录表单区域 -->
     <view class="login-card">
       <view class="form-wrap">
-        <wd-form ref="loginFormRef" :model="loginFormData">
+        <!-- 使用 uni 原生表单组件替换 wd-form -->
+        <view class="form-container">
           <!-- 用户名输入框 -->
           <view class="form-item">
-            <wd-icon name="user" size="22" color="#165DFF" class="input-icon" />
+            <uni-icons type="contact" size="22" color="#165DFF" class="input-icon" />
             <input v-model="loginFormData.username" class="form-input" placeholder="请输入用户名" />
-            <wd-icon
+            <uni-icons
               v-if="loginFormData.username"
-              name="close-fill"
+              type="clear"
               size="18"
               color="#9ca3af"
               class="clear-icon"
@@ -31,34 +79,45 @@
 
           <!-- 密码输入框 -->
           <view class="form-item">
-            <wd-icon name="lock-on" size="22" color="#165DFF" class="input-icon" />
+            <uni-icons type="locked" size="22" color="#165DFF" class="input-icon" />
+
+<!--            当 showPassword为 true时（密码可见）：-->
+<!--            !showPassword= false-->
+<!--            :password="false"→ 输入框显示明文-->
+<!--            当 showPassword为 false时（密码隐藏）：-->
+<!--            !showPassword= true-->
+<!--            :password="true"→ 输入框显示星号-->
             <input
               v-model="loginFormData.password"
               class="form-input"
-              :type="showPassword ? 'text' : 'password'"
+              :password="!showPassword"
               placeholder="请输入密码"
               placeholder-style="color: #9ca3af; font-weight: normal;"
             />
-            <wd-icon
-              :name="showPassword ? 'eye-open' : 'eye-close'"
-              size="18"
-              color="#9ca3af"
-              class="eye-icon"
-              @click="showPassword = !showPassword"
-            />
+            <!-- 修正：使用正确的图标类型 -->
+            <view class="eye-icon" @click="showPassword = !showPassword">
+              <!--                工作逻辑：-->
+              <!--                当 showPassword为 true时（密码可见），显示 睁眼图标 (eye)-->
+              <!--                当 showPassword为 false时（密码隐藏），显示 闭眼图标 (eye-slash)-->
+              <uni-icons
+                :type="showPassword ? 'eye' : 'eye-slash'"
+                size="18"
+                color="#9ca3af"
+              />
+            </view>
           </view>
           <view class="divider"></view>
 
           <!-- 登录按钮 -->
           <button
             class="login-btn"
-            :disabled="loading"
-            :style="loading ? 'opacity: 0.7;' : ''"
+            :disabled="loading || !hasAgreed"
+            :style="(loading || !hasAgreed) ? 'opacity: 0.7;' : ''"
             @click="handleLogin"
           >
-            登录
+            {{ hasAgreed ? '登录' : '请先同意协议' }}
           </button>
-        </wd-form>
+        </view>
 
         <!-- 微信登录 -->
         <view class="other-login">
@@ -75,9 +134,14 @@
           </view>
         </view>
 
-        <!-- 底部协议 -->
+        <!-- 底部协议 - 添加圆形选择按钮 -->
         <view class="agreement">
-          <text class="text">登录即同意</text>
+          <view class="agreement-checkbox" @click="toggleAgree">
+            <view class="circle-checkbox" :class="{ checked: hasAgreed }">
+              <view v-if="hasAgreed" class="circle-checkbox-inner"></view>
+            </view>
+          </view>
+          <text class="text">是否同意</text>
           <text class="link" @click="navigateToUserAgreement">《用户协议》</text>
           <text class="text">和</text>
           <text class="link" @click="navigateToPrivacy">《隐私政策》</text>
@@ -85,22 +149,29 @@
       </view>
     </view>
 
-    <wd-toast />
+    <!-- 使用 uni 的 toast 替换 wd-toast -->
   </view>
 </template>
 
 <script lang="ts" setup>
-import { onLoad } from "@dcloudio/uni-app";
+import { onLoad, onShow} from "@dcloudio/uni-app";  // 添加 onShow 导入
 import { type LoginFormData } from "@/api/auth";
 import { useUserStore } from "@/store/modules/user";
-import { useToast } from "wot-design-uni/components/wd-toast/index";
 import { ref } from "vue";
 
-const loginFormRef = ref();
-const toast = useToast();
+// 移除 wd-toast 引用
 const loading = ref(false);
 const userStore = useUserStore();
 const showPassword = ref(false);
+
+// 用户是否同意协议的状态  // 统一使用一个 hasAgreed 变量
+const hasAgreed = ref(false);
+
+// 隐私协议相关状态
+const showPrivacyAgreement = ref(false);
+
+
+
 
 // 登录表单数据
 const loginFormData = ref<LoginFormData>({
@@ -116,10 +187,80 @@ onLoad((options) => {
   } else {
     redirect.value = "/pages/index/index";
   }
+
+  // 检查是否已经同意过协议
+  checkAgreementStatus();
 });
 
-// 登录处理
+// 检查隐私协议同意状态
+const checkAgreementStatus = () => {
+  const agreed = uni.getStorageSync('hasAgreedPrivacy');
+  hasAgreed.value = agreed;
+  showPrivacyAgreement.value = !agreed;
+};
+
+// 检查隐私协议同意状态
+onShow(() => {
+  checkAgreementStatus();
+});
+
+// 切换同意状态
+const toggleAgree = () => {
+  hasAgreed.value = !hasAgreed.value;
+
+};
+
+// 处理同意
+const handleAgree = () => {
+  if (!hasAgreed.value) return;
+
+  uni.setStorageSync('hasAgreedPrivacy', true);
+  uni.setStorageSync('privacyAgreeTime', Date.now());
+
+  showPrivacyAgreement.value = false;
+};
+
+// 处理不同意
+const handleDisagree = () => {
+  uni.showModal({
+    title: '提示',
+    content: '您需要同意《用户服务协议》和《隐私政策》才能使用本小程序。',
+    confirmText: '退出小程序',
+    cancelText: '再次查看',
+    success: (res) => {
+      if (res.confirm) {
+        uni.exitMiniProgram();
+      }else {
+        // 用户点击"再次查看"，不做任何操作，停留在当前弹窗
+      }
+    }
+  });
+};
+
+// 预览协议
+const previewAgreement = (type: string) => {
+  const urls = {
+    user: '/pages/mine/user-agreement/index',
+    privacy: '/pages/mine/privacy/index'
+  };
+
+  uni.navigateTo({
+    url: urls[type as keyof typeof urls]
+  });
+};
+
+
+// 登录处理 - 使用 uni.showToast 替换 wd-toast
 const handleLogin = () => {
+  if (!hasAgreed.value) {
+    uni.showToast({
+      title: '请先同意用户协议和隐私政策',
+      icon: 'none',
+      duration: 2000
+    });
+    return;
+  }
+
   if (loading.value) return;
   loading.value = true;
 
@@ -127,18 +268,19 @@ const handleLogin = () => {
     .login(loginFormData.value)
     .then(() => userStore.getInfo())
     .then(() => {
-      toast.success("登录成功");
+      uni.showToast({
+        title: '登录成功',
+        icon: 'success',
+        duration: 1000
+      });
 
-      // 检查用户信息是否完整
       if (!userStore.isUserInfoComplete()) {
-        // 信息不完整，跳转到完善信息页面
         setTimeout(() => {
           uni.navigateTo({
             url: `/pages/login/complete-profile?redirect=${encodeURIComponent(redirect.value)}`,
           });
         }, 1000);
       } else {
-        // 否则直接跳转到重定向页面
         setTimeout(() => {
           uni.reLaunch({
             url: redirect.value,
@@ -147,43 +289,54 @@ const handleLogin = () => {
       }
     })
     .catch((error) => {
-      toast.error(error?.message || "登录失败");
+      uni.showToast({
+        title: error?.message || "登录失败",
+        icon: 'none',
+        duration: 2000
+      });
     })
     .finally(() => {
       loading.value = false;
     });
 };
 
-// 微信登录处理
+// 微信登录处理 - 使用 uni.showToast 替换 wd-toast
 const handleWechatLogin = async () => {
+  if (!hasAgreed.value) {
+    uni.showToast({
+      title: '请先同意用户协议和隐私政策',
+      icon: 'none',
+      duration: 2000
+    });
+    return;
+  }
+
   if (loading.value) return;
   loading.value = true;
 
   try {
     // #ifdef MP-WEIXIN
-    // 获取微信登录的临时 code
     const { code } = await uni.login({
       provider: "weixin",
     });
 
-    // 调用后端接口进行登录认证
     const result = await userStore.loginByWechat(code);
 
     if (result) {
-      // 获取用户信息
       await userStore.getInfo();
-      toast.success("登录成功");
+      uni.showToast({
+        title: '登录成功',
+        icon: 'success',
+        duration: 1000
+      });
 
-      // 检查用户信息是否完整
       if (!userStore.isUserInfoComplete()) {
-        // 如果信息不完整，跳转到完善信息页面
         setTimeout(() => {
           uni.navigateTo({
             url: `/pages/login/complete-profile?redirect=${encodeURIComponent(redirect.value)}`,
           });
         }, 1000);
       } else {
-        // 否则直接跳转到重定向页面
         setTimeout(() => {
           uni.reLaunch({
             url: redirect.value,
@@ -194,10 +347,18 @@ const handleWechatLogin = async () => {
     // #endif
 
     // #ifndef MP-WEIXIN
-    toast.error("当前环境不支持微信登录");
+    uni.showToast({
+      title: '当前环境不支持微信登录',
+      icon: 'none',
+      duration: 2000
+    });
     // #endif
   } catch (error: any) {
-    toast.error(error?.message || "微信登录失败");
+    uni.showToast({
+      title: error?.message || "微信登录失败",
+      icon: 'none',
+      duration: 2000
+    });
   } finally {
     loading.value = false;
   }
@@ -206,14 +367,14 @@ const handleWechatLogin = async () => {
 // 跳转到用户协议页面
 const navigateToUserAgreement = () => {
   uni.navigateTo({
-    url: "/pages/mine/user-agreement/index",
+    url: "packageA/pages/mine/settings/agreements/index",
   });
 };
 
 // 跳转到隐私政策页面
 const navigateToPrivacy = () => {
   uni.navigateTo({
-    url: "/pages/mine/privacy/index",
+    url: "packageA/pages/mine/settings/privacy/index",
   });
 };
 </script>
@@ -226,6 +387,135 @@ const navigateToPrivacy = () => {
   align-items: center;
   height: 100vh;
   overflow: hidden;
+}
+
+
+/* 隐私协议弹窗样式 */
+.privacy-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 40rpx;
+}
+
+.privacy-content {
+  width: 100%;
+  max-width: 600rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.privacy-header {
+  padding: 40rpx 40rpx 20rpx;
+  text-align: center;
+
+  .title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.privacy-body {
+  padding: 20rpx 40rpx 40rpx;
+
+  .desc {
+    font-size: 28rpx;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 30rpx;
+  }
+
+  .agreement-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40rpx;
+
+    .link {
+      color: #165DFF;
+      margin: 0 10rpx;
+    }
+  }
+
+  .agreement-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20rpx 0;
+
+    .circle-checkbox {
+      width: 40rpx;
+      height: 40rpx;
+      border: 2rpx solid #dcdfe6;
+      border-radius: 50%;
+      margin-right: 20rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+
+      &.checked {
+        background: #165DFF;
+        border-color: #165DFF;
+      }
+
+      .circle-checkbox-inner {
+        width: 16rpx;
+        height: 16rpx;
+        background: #fff;
+        border-radius: 50%;
+      }
+    }
+
+    .checkbox-label {
+      font-size: 28rpx;
+      color: #333;
+    }
+  }
+}
+
+.privacy-footer {
+  display: flex;
+  border-top: 1rpx solid #f0f0f0;
+
+  .btn {
+    flex: 1;
+    height: 100rpx;
+    line-height: 100rpx;
+    font-size: 32rpx;
+    border: none;
+    border-radius: 0;
+    background: none;
+
+    &.disagree {
+      color: #666;
+      border-right: 1rpx solid #f0f0f0;
+    }
+
+    &.agree {
+      color: #165DFF;
+      background: #fff;
+
+      &.disabled {
+        color: #c0c4cc;
+        background: #f5f7fa;
+      }
+    }
+
+    &::after {
+      border: none;
+    }
+  }
 }
 
 .login-bg {
@@ -375,19 +665,55 @@ const navigateToPrivacy = () => {
   height: 60rpx;
 }
 
+/* 底部协议样式 */
 .agreement {
   display: flex;
+  align-items: center;
   justify-content: center;
   margin-top: 30rpx;
   font-size: 24rpx;
+  padding: 20rpx 0;
 }
 
+.agreement-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 10rpx;
+}
+
+.circle-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #dcdfe6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8rpx;
+  transition: all 0.3s;
+
+  &.checked {
+    background: #165DFF;
+    border-color: #165DFF;
+  }
+}
+
+.circle-checkbox-inner {
+  width: 16rpx;
+  height: 16rpx;
+  background: #fff;
+  border-radius: 50%;
+}
+
+//--------------------------------
 .agreement .text {
   padding: 0 4rpx;
   color: #9ca3af;
+  font-size: 24rpx;
 }
 
 .agreement .link {
   color: #165dff;
+  font-size: 24rpx;
 }
 </style>
